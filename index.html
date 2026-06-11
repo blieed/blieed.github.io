@@ -33,18 +33,17 @@
             const ipEl = document.getElementById('ip');
 
             try {
-                status度は = "FETCHING DATA...";
                 statusEl.innerText = "FETCHING DATA...";
 
                 // Use HTTPS and a different API provider to avoid the 403 error on GitHub Pages
-                const response = await fetch(`https://ipapi.co/json/?nocache=${new Date().getTime()}`);
-                
-                if (!response.ok) throw new Error("Network response was not ok");
-                
-                const data = await response.json();
+                const response = await fetch('https://ipwho.is/');
 
-                if (data && data.ip) {
-                    // UI Success
+if (!response.ok) throw new Error("Network response was not ok");
+
+const data = await response.json();
+
+if (data && data.success) {
+    // UI Success
                     statusEl.innerText = "TARGET_ACQUIRED";
                     ipEl.innerText = data.ip;
 
